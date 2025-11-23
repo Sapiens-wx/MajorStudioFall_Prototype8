@@ -48,7 +48,7 @@ public class GearCtrl:Singleton<GearCtrl>{
         throttleBar.SetProgress(CarInput.inst.throttleInput);
         brakeBar.SetProgress(CarInput.inst.brakeInput);
         clutchBar.SetProgress(CarInput.inst.clutchInput);
-        UpdateStickPos(CarInput.inst.gearBoxInput);
+        UpdateStickPos(CarInput.inst.gearBoxInput, CarInput.inst.gearBoxInputDelta);
         UpdateGear();
         textGear.text=$"gear: {gear}";
         textLastGear.text=$"lastGear: {lastGear}";
@@ -124,9 +124,10 @@ public class GearCtrl:Singleton<GearCtrl>{
         public Vector3 value;
         public StickStage origin;
         public StickOffset(StickStage origin) {
-            SetOrigin(origin);
+            SetOrigin(origin, false);
         }
-        public void SetOrigin(StickStage origin) {
+        public void SetOrigin(StickStage origin, bool duplicateDetection) {
+            if(this.origin==origin && duplicateDetection) return;
             this.origin=origin;
             switch (origin) {
                 case StickStage.Center:
@@ -177,7 +178,8 @@ public class GearCtrl:Singleton<GearCtrl>{
         if(arr[0].dist<sqr_trigger_dist) return arr[0].stage;
         return arr[0].stage|arr[1].stage;
     }
-    void UpdateStickPos(Vector2 input){
+    void UpdateStickPos(Vector2 input, Vector2 inputDelta){
+        const float eps=0.001f;
         Vector3 scaledInput=(Vector3)(input*scale);
         Vector3 stickPos=stick.position-stickCenter;
         Vector3 targetPos=stickPos;
@@ -188,7 +190,7 @@ public class GearCtrl:Singleton<GearCtrl>{
         switch (stickStage) {
             //Center
             case StickStage.Center:
-                if(joyStickAtCenter) stickOffset.SetOrigin(StickStage.Center);
+                if(joyStickAtCenter) stickOffset.SetOrigin(StickStage.Center, true);
                 switch (stickOffset.origin) {
                     case StickStage.Center:
                         targetPos=scaledInput;
@@ -197,76 +199,364 @@ public class GearCtrl:Singleton<GearCtrl>{
                         else targetPos.x=0;
                         break;
                     case StickStage.TM:
+                        targetPos.y=-scale;
+                        targetPos.x=0;
                         if(Mathf.Abs(input.x)>Mathf.Abs(input.y+.5f))
                             targetPos.x=scaledInput.x;
-                        else targetPos.y=scaledInput.y*2;
+                        else targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        break;
+                    case StickStage.BM:
+                        targetPos.y=scale;
+                        targetPos.x=0;
+                        if(Mathf.Abs(input.x)>Mathf.Abs(input.y-.5f))
+                            targetPos.x=scaledInput.x;
+                        else targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        break;
+                    case StickStage.TL:
+                        targetPos.x=scale;
+                        targetPos.y=-scale;
+                        if(Mathf.Abs(input.x-.5f)>Mathf.Abs(input.y+.5f))
+                            targetPos.x=scaledInput.x*2;
+                        else targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        break;
+                    case StickStage.BL:
+                        targetPos.x=scale;
+                        targetPos.y=scale;
+                        if(Mathf.Abs(input.x-.5f)>Mathf.Abs(input.y-.5f))
+                            targetPos.x=scaledInput.x*2;
+                        else targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        break;
+                    case StickStage.TR:
+                        targetPos.x=-scale;
+                        targetPos.y=-scale;
+                        if(Mathf.Abs(input.x+.5f)>Mathf.Abs(input.y+.5f))
+                            targetPos.x=scaledInput.x*2;
+                        else targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        break;
+                    case StickStage.BR:
+                        targetPos.x=-scale;
+                        targetPos.y=scale;
+                        if(Mathf.Abs(input.x+.5f)>Mathf.Abs(input.y-.5f))
+                            targetPos.x=scaledInput.x*2;
+                        else targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
                         break;
                 }
                 break;
             //Center edge
             case StickStage.Center2L:
             case StickStage.Center2R:
-                targetPos.x=scaledInput.x;
+                switch (stickOffset.origin) {
+                    case StickStage.Center:
+                        targetPos.x=scaledInput.x;
+                        targetPos.y=0;
+                        break;
+                    case StickStage.TM:
+                        targetPos.x=scaledInput.x;
+                        targetPos.y=-scale;
+                        break;
+                    case StickStage.BM:
+                        targetPos.x=scaledInput.x;
+                        targetPos.y=scale;
+                        break;
+                    case StickStage.TL:
+                        targetPos.y=-scale;
+                        targetPos.x=scaledInput.x*2;
+                        break;
+                    case StickStage.BL:
+                        targetPos.y=scale;
+                        targetPos.x=scaledInput.x*2;
+                        break;
+                    case StickStage.TR:
+                        targetPos.y=-scale;
+                        targetPos.x=scaledInput.x*2;
+                        break;
+                    case StickStage.BR:
+                        targetPos.y=scale;
+                        targetPos.x=scaledInput.x*2;
+                        break;
+                }
                 break;
             case StickStage.Center2T:
-                targetPos.y=scaledInput.y;
-                break;
             case StickStage.Center2B:
-                targetPos.y=scaledInput.y;
+                switch (stickOffset.origin) {
+                    case StickStage.Center:
+                        targetPos.x=0;
+                        targetPos.y=scaledInput.y;
+                        break;
+                    case StickStage.TM:
+                        targetPos.x=0;
+                        targetPos.y=scaledInput.y*2;
+                        if(inputDelta.y>0) targetPos.y=-scale;
+                        break;
+                    case StickStage.BM:
+                        targetPos.x=0;
+                        targetPos.y=scaledInput.y*2;
+                        if(inputDelta.y<0) targetPos.y=scale;
+                        break;
+                    case StickStage.TL:
+                        targetPos.x=scale;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                    case StickStage.BL:
+                        targetPos.x=scale;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                    case StickStage.TR:
+                        targetPos.x=-scale;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                    case StickStage.BR:
+                        targetPos.x=-scale;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                }
                 break;
             //Left
             case StickStage.ML:
-                targetPos=scaledInput;
-                if(Mathf.Abs(scale+targetPos.x)>Mathf.Abs(targetPos.y))
-                    targetPos.y=0;
+                switch (stickOffset.origin) {
+                    case StickStage.Center:
+                        targetPos=scaledInput;
+                        if(Mathf.Abs(scale+targetPos.x)>Mathf.Abs(targetPos.y))
+                            targetPos.y=0;
+                        break;
+                    case StickStage.TM:
+                        if (Mathf.Abs(input.x + 1f) > Mathf.Abs(input.y*2 + 1f)) { //x axis move
+                            targetPos.x=scaledInput.x;
+                            targetPos.y=-scale;
+                        } else { //y axis move
+                            targetPos.x=-scale;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        }
+                        break;
+                    case StickStage.BM:
+                        if (Mathf.Abs(input.x + 1f) > Mathf.Abs(input.y*2 - 1f)) { //x axis move
+                            targetPos.x=scaledInput.x;
+                            targetPos.y=scale;
+                        } else { //y axis move
+                            targetPos.x=-scale;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        }
+                        break;
+                    case StickStage.TL:
+                        if(Mathf.Abs(input.x)>Mathf.Abs(input.y*2+1f)){ //x axis move
+                            targetPos.x=Mathf.Clamp(scaledInput.x, 0f, scale);
+                            targetPos.y=-scale;
+                        } else { //y axis move
+                            targetPos.x=0;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        }
+                        break;
+                    case StickStage.BL:
+                        if(Mathf.Abs(input.x)>Mathf.Abs(input.y*2-1f)){ //x axis move
+                            targetPos.x=Mathf.Clamp(scaledInput.x, 0f, scale);
+                            targetPos.y=scale;
+                        } else { //y axis move
+                            targetPos.x=0;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        }
+                        break;
+                    case StickStage.TR:
+                        if(Mathf.Abs(input.x+1f)>Mathf.Abs(input.y*2+1f)){ //x axis move
+                            targetPos.x=Mathf.Clamp(scaledInput.x, -scale, 0)*2;
+                            targetPos.y=-scale;
+                        } else{ //y axis move
+                            targetPos.x=-scale*2;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        }
+                        break;
+                    case StickStage.BR:
+                        if(Mathf.Abs(input.x+1f)>Mathf.Abs(input.y*2-1f)){ //x axis move
+                            targetPos.x=Mathf.Clamp(scaledInput.x, -scale, 0)*2;
+                            targetPos.y=scale;
+                        } else{ //y axis move
+                            targetPos.x=-scale*2;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        }
+                        break;
+                }
                 break;
             case StickStage.TL:
-                targetPos.y=Mathf.Clamp(scaledInput.y,-scale,0f)+scale;
+                stickOffset.SetOrigin(StickStage.TL, true);
+                switch (stickOffset.origin) {
+                    case StickStage.TL:
+                        targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        targetPos.x=0;
+                        break;
+                }
                 break;
             case StickStage.BL:
-                targetPos.y=Mathf.Clamp(scaledInput.y, 0f, scale)-scale;
+                stickOffset.SetOrigin(StickStage.BL, true);
+                switch (stickOffset.origin) {
+                    case StickStage.BL:
+                        targetPos.y=Mathf.Clamp(scaledInput.y, 0f, scale)*2;
+                        targetPos.x=0;
+                        break;
+                }
                 break;
             case StickStage.ML2T:
             case StickStage.ML2B:
-                targetPos.x=-scale;
-                if(lastGear==0)
-                    targetPos.y=scaledInput.y;
+                switch (stickOffset.origin) {
+                    case StickStage.Center:
+                        targetPos.x=-scale;
+                        targetPos.y=scaledInput.y;
+                        break;
+                    case StickStage.TM:
+                    case StickStage.BM:
+                        targetPos.x=-scale;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                    case StickStage.TL:
+                    case StickStage.BL:
+                        targetPos.x=0;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                    case StickStage.TR:
+                    case StickStage.BR:
+                        targetPos.x=-scale*2;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                }
                 break;
             //Right
             case StickStage.MR:
-                targetPos=scaledInput;
-                if(Mathf.Abs(scale-targetPos.x)>Mathf.Abs(targetPos.y))
-                    targetPos.y=0;
+                switch (stickOffset.origin) {
+                    case StickStage.Center:
+                        targetPos=scaledInput;
+                        if(Mathf.Abs(input.x-1f)>Mathf.Abs(input.y))
+                            targetPos.y=0;
+                        break;
+                    case StickStage.TM:
+                        if (Mathf.Abs(input.x - 1f) > Mathf.Abs(input.y*2 + 1f)) { //x axis move
+                            targetPos.x=scaledInput.x;
+                            targetPos.y=-scale;
+                        } else { //y axis move
+                            targetPos.x=scale;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        }
+                        break;
+                    case StickStage.BM:
+                        if (Mathf.Abs(input.x - 1f) > Mathf.Abs(input.y*2 - 1f)) { //x axis move
+                            targetPos.x=scaledInput.x;
+                            targetPos.y=scale;
+                        } else { //y axis move
+                            targetPos.x=scale;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        }
+                        break;
+                    case StickStage.TL:
+                        if(Mathf.Abs(input.x-1)>Mathf.Abs(input.y*2+1f)){ //x axis move
+                            targetPos.x=Mathf.Clamp(scaledInput.x, 0f, scale)*2;
+                            targetPos.y=-scale;
+                        } else { //y axis move
+                            targetPos.x=scale*2;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        }
+                        break;
+                    case StickStage.BL:
+                        if(Mathf.Abs(input.x-1)>Mathf.Abs(input.y*2-1f)){ //x axis move
+                            targetPos.x=Mathf.Clamp(scaledInput.x, 0f, scale)*2;
+                            targetPos.y=scale;
+                        } else { //y axis move
+                            targetPos.x=scale*2;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        }
+                        break;
+                    case StickStage.TR:
+                        if(Mathf.Abs(input.x)>Mathf.Abs(input.y*2+1f)){ //x axis move
+                            targetPos.x=Mathf.Clamp(scaledInput.x, -scale, 0)*2;
+                            targetPos.y=-scale;
+                        } else{ //y axis move
+                            targetPos.x=0;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        }
+                        break;
+                    case StickStage.BR:
+                        if(Mathf.Abs(input.x)>Mathf.Abs(input.y*2-1f)){ //x axis move
+                            targetPos.x=Mathf.Clamp(scaledInput.x, -scale, 0)*2;
+                            targetPos.y=scale;
+                        } else{ //y axis move
+                            targetPos.x=0;
+                            targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        }
+                        break;
+                }
                 break;
             case StickStage.TR:
-                targetPos.y=Mathf.Clamp(scaledInput.y,-scale,0f)+scale;
+                stickOffset.SetOrigin(StickStage.TR, true);
+                switch (stickOffset.origin) {
+                    case StickStage.TR:
+                        targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0)*2;
+                        targetPos.x=0;
+                        break;
+                }
                 break;
             case StickStage.BR:
-                targetPos.y=Mathf.Clamp(scaledInput.y, 0f, scale)-scale;
+                stickOffset.SetOrigin(StickStage.BR, true);
+                switch (stickOffset.origin) {
+                    case StickStage.BR:
+                        targetPos.y=Mathf.Clamp(scaledInput.y, 0, scale)*2;
+                        targetPos.x=0;
+                        break;
+                }
                 break;
             case StickStage.MR2T:
             case StickStage.MR2B:
-                targetPos.x=scale;
-                if(lastGear==0)
-                    targetPos.y=scaledInput.y;
+                switch (stickOffset.origin) {
+                    case StickStage.Center:
+                        targetPos.x=scale;
+                        targetPos.y=scaledInput.y;
+                        break;
+                    case StickStage.TM:
+                    case StickStage.BM:
+                        targetPos.x=scale;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                    case StickStage.TL:
+                    case StickStage.BL:
+                        targetPos.x=scale*2;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                    case StickStage.TR:
+                    case StickStage.BR:
+                        targetPos.x=0;
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                }
                 break;
             //Middle Top
             case StickStage.TM:
                 if(stickOffset.origin!=StickStage.TM)
-                    stickOffset.SetOrigin(StickStage.TM);
+                    stickOffset.SetOrigin(StickStage.TM, true);
                 switch (stickOffset.origin)
                 {
                     case StickStage.TM:
                         targetPos.y=Mathf.Clamp(scaledInput.y, -scale, 0f)*2;
                         break;
-                    default:
-                        targetPos.y=scaledInput.y*2-scale;
-                        break;
                 }
                 break;
             //Middle Bottom
             case StickStage.BM:
-                targetPos.y=Mathf.Clamp(scaledInput.y, 0f, scale)-scale;
+                if(stickOffset.origin!=StickStage.BM)
+                    stickOffset.SetOrigin(StickStage.BM, true);
+                switch (stickOffset.origin)
+                {
+                    case StickStage.BM:
+                        targetPos.y=scaledInput.y*2;
+                        break;
+                }
+                break;
+        }
+        // clamp targetPos based on the offset
+        switch (stickOffset.origin) {
+            case StickStage.TL:
+            case StickStage.TM:
+            case StickStage.TR:
+                targetPos.y=Mathf.Clamp(targetPos.y, -2*scale, 0);
+                break;
+            case StickStage.BL:
+            case StickStage.BM:
+            case StickStage.BR:
+                targetPos.y=Mathf.Clamp(targetPos.y, 0, 2*scale);
                 break;
         }
         stick.position=targetPos+stickOffset.value;
