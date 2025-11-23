@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using EdyCommonTools;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GearCtrl:Singleton<GearCtrl>{
     public float scale;
@@ -10,6 +12,10 @@ public class GearCtrl:Singleton<GearCtrl>{
     public Transform stick;
 
     public ProgressBar throttleBar, brakeBar, clutchBar;
+    [Header("Vibration")]
+    public float vibrateLowFrq;
+    public float vibrateHighFrq;
+    public float vibrateDuration;
 
     // gear index:
     // 1   3   5
@@ -23,6 +29,7 @@ public class GearCtrl:Singleton<GearCtrl>{
     Vector3 stickCenter;
     StickOffset stickOffset;
     bool joyStickAtCenter;
+    Coroutine vibrateCoro;
 
     public int Gear {
         get=>gear;
@@ -674,7 +681,20 @@ public class GearCtrl:Singleton<GearCtrl>{
                 break;
         }
         //update lastGear only if the gear has changed
-        if(tmpGear!=gear || lastStickStage!=stickStage)
+        if(tmpGear!=gear) {
             lastGear=tmpGear;
+            if(vibrateCoro!=null)
+                StopCoroutine(vibrateCoro);
+            vibrateCoro=StartCoroutine(Vibrate());
+        }
+    }
+    IEnumerator Vibrate()
+    {
+        if(Gamepad.current!=null)
+            Gamepad.current.SetMotorSpeeds(vibrateLowFrq, vibrateHighFrq);
+        yield return new WaitForSeconds(vibrateDuration);
+        if(Gamepad.current!=null)
+            Gamepad.current.SetMotorSpeeds(0f, 0f);
+        vibrateCoro=null;
     }
 }
