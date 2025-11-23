@@ -70,6 +70,7 @@ public class CarCtrl : Singleton<CarCtrl>
         SetMotorTorque(torque);
     }
     void HandleGear(){
+        curGear=GearCtrl.inst.Gear;
         if(Input.GetKeyDown(KeyCode.Return) &&
             curGear<gearCount-1){
             ++curGear;

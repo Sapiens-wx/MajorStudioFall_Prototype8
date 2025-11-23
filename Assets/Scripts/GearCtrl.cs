@@ -6,6 +6,7 @@ using UnityEngine;
 public class GearCtrl:Singleton<GearCtrl>{
     public float scale;
     public float gearTriggerDist;
+    public float stickToNeutralEps, maxStickDisplacement;
     public Transform stick;
 
     public ProgressBar throttleBar, brakeBar, clutchBar;
@@ -22,6 +23,10 @@ public class GearCtrl:Singleton<GearCtrl>{
     Vector3 stickCenter;
     StickOffset stickOffset;
     bool joyStickAtCenter;
+
+    public int Gear {
+        get=>gear;
+    }
 
     //debug
     public TMP_Text textStickStage;
@@ -82,18 +87,22 @@ public class GearCtrl:Singleton<GearCtrl>{
     // |   |   |
     // 1   4   6
     // for this gear, [n] means the [n]th digit that is 1 in that enum
+    // row-wise: top(2^0) middle(2^1) bottom(2^2)
+    // col-wise: left(2^3) middle(2^4) right(2^5)
+    // to describe a position, we use [row][col].
+    // 
     // then each edge's enum value equals to [n|m], given two stick position enum [n] and [m]
     enum StickStage
     {
-        Center=0b1,
-        BL=0b10,
-        ML=0b100,
-        TL=0b1000,
-        BR=0b1000000,
-        MR=0b10000000,
-        TR=0b100000000,
-        TM=0b100000,
-        BM=0b10000,
+        Center=RowMiddle|ColMiddle,
+        BL=RowBottom|ColLeft,
+        ML=RowMiddle|ColLeft,
+        TL=RowTop|ColLeft,
+        BR=RowBottom|ColRight,
+        MR=RowMiddle|ColRight,
+        TR=RowTop|ColRight,
+        TM=RowTop|ColMiddle,
+        BM=RowBottom|ColMiddle,
         // dangling
         Center2L=Center|ML,
         Center2R=Center|MR,
@@ -104,6 +113,13 @@ public class GearCtrl:Singleton<GearCtrl>{
         MR2T=MR|TR,
         MR2B=MR|BR,
         Dangling=0,
+        // not used for a stage or position
+        RowTop=0b1,
+        RowMiddle=0b10,
+        RowBottom=0b100,
+        ColLeft=0b1000,
+        ColMiddle=0b10000,
+        ColRight=0b100000,
     }
     class StickDist : IComparable<StickDist>{
         public float dist;
@@ -179,7 +195,7 @@ public class GearCtrl:Singleton<GearCtrl>{
         return arr[0].stage|arr[1].stage;
     }
     void UpdateStickPos(Vector2 input, Vector2 inputDelta){
-        const float eps=0.001f;
+        float maxSpd=maxStickDisplacement*scale;
         Vector3 scaledInput=(Vector3)(input*scale);
         Vector3 stickPos=stick.position-stickCenter;
         Vector3 targetPos=stickPos;
@@ -253,26 +269,52 @@ public class GearCtrl:Singleton<GearCtrl>{
                     case StickStage.TM:
                         targetPos.x=scaledInput.x;
                         targetPos.y=-scale;
+                        if((inputDelta.x<stickToNeutralEps && stickStage==StickStage.Center2R)||
+                            inputDelta.x>stickToNeutralEps && stickStage==StickStage.Center2L){
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                     case StickStage.BM:
                         targetPos.x=scaledInput.x;
                         targetPos.y=scale;
+                        if((inputDelta.x<stickToNeutralEps && stickStage==StickStage.Center2R)||
+                            inputDelta.x>stickToNeutralEps && stickStage==StickStage.Center2L){
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                     case StickStage.TL:
                         targetPos.y=-scale;
                         targetPos.x=scaledInput.x*2;
+                        if (inputDelta.x < -stickToNeutralEps) {
+                            targetPos=Vector2.zero;
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                        }
                         break;
                     case StickStage.BL:
                         targetPos.y=scale;
                         targetPos.x=scaledInput.x*2;
+                        if (inputDelta.x < -stickToNeutralEps) {
+                            targetPos=Vector2.zero;
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                        }
                         break;
                     case StickStage.TR:
                         targetPos.y=-scale;
                         targetPos.x=scaledInput.x*2;
+                        if (inputDelta.x > stickToNeutralEps) {
+                            targetPos=Vector2.zero;
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                        }
                         break;
                     case StickStage.BR:
                         targetPos.y=scale;
                         targetPos.x=scaledInput.x*2;
+                        if (inputDelta.x > stickToNeutralEps) {
+                            targetPos=Vector2.zero;
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                        }
                         break;
                 }
                 break;
@@ -286,12 +328,18 @@ public class GearCtrl:Singleton<GearCtrl>{
                     case StickStage.TM:
                         targetPos.x=0;
                         targetPos.y=scaledInput.y*2;
-                        if(inputDelta.y>0) targetPos.y=-scale;
+                        if(inputDelta.y>stickToNeutralEps){
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                     case StickStage.BM:
                         targetPos.x=0;
                         targetPos.y=scaledInput.y*2;
-                        if(inputDelta.y<0) targetPos.y=scale;
+                        if(inputDelta.y<stickToNeutralEps){
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                     case StickStage.TL:
                         targetPos.x=scale;
@@ -404,16 +452,31 @@ public class GearCtrl:Singleton<GearCtrl>{
                     case StickStage.BM:
                         targetPos.x=-scale;
                         targetPos.y=scaledInput.y*2;
+                        if((inputDelta.y<-stickToNeutralEps&&stickOffset.origin==StickStage.BM)||
+                            (inputDelta.y > stickToNeutralEps && stickOffset.origin == StickStage.TM)) {
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                     case StickStage.TL:
                     case StickStage.BL:
                         targetPos.x=0;
                         targetPos.y=scaledInput.y*2;
+                        if((inputDelta.y<-stickToNeutralEps&&stickOffset.origin==StickStage.BL)||
+                            (inputDelta.y > stickToNeutralEps && stickOffset.origin == StickStage.TL)) {
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                     case StickStage.TR:
                     case StickStage.BR:
                         targetPos.x=-scale*2;
                         targetPos.y=scaledInput.y*2;
+                        if((inputDelta.y<-stickToNeutralEps&&stickOffset.origin==StickStage.TR)||
+                            (inputDelta.y > stickToNeutralEps && stickOffset.origin == StickStage.BR)) {
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                 }
                 break;
@@ -510,16 +573,31 @@ public class GearCtrl:Singleton<GearCtrl>{
                     case StickStage.BM:
                         targetPos.x=scale;
                         targetPos.y=scaledInput.y*2;
+                        if((inputDelta.y>stickToNeutralEps&&stickOffset.origin==StickStage.TM)||
+                            (inputDelta.y < -stickToNeutralEps && stickOffset.origin == StickStage.BM)) {
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                     case StickStage.TL:
                     case StickStage.BL:
                         targetPos.x=scale*2;
                         targetPos.y=scaledInput.y*2;
+                        if((inputDelta.y>stickToNeutralEps&&stickOffset.origin==StickStage.TL)||
+                            (inputDelta.y < -stickToNeutralEps && stickOffset.origin == StickStage.BL)) {
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                     case StickStage.TR:
                     case StickStage.BR:
                         targetPos.x=0;
                         targetPos.y=scaledInput.y*2;
+                        if((inputDelta.y>stickToNeutralEps&&stickOffset.origin==StickStage.TR)||
+                            (inputDelta.y < -stickToNeutralEps && stickOffset.origin == StickStage.BR)) {
+                            stickOffset.SetOrigin(StickStage.Center, false);
+                            targetPos=Vector2.zero;
+                        }
                         break;
                 }
                 break;
@@ -559,7 +637,12 @@ public class GearCtrl:Singleton<GearCtrl>{
                 targetPos.y=Mathf.Clamp(targetPos.y, 0, 2*scale);
                 break;
         }
-        stick.position=targetPos+stickOffset.value;
+        //update stick position
+        Vector3 actualPosOffset=targetPos+stickOffset.value-stick.position;
+        float actualPosOffsetMag=actualPosOffset.magnitude;
+        if(actualPosOffsetMag>maxSpd)
+            actualPosOffset=actualPosOffset/actualPosOffsetMag*maxSpd;
+        stick.position+=actualPosOffset;
         if(tmpStickStage!=stickStage)
             lastStickStage=tmpStickStage;
         textStickStage.text=stickStage.ToString();
