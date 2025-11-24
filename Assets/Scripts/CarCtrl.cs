@@ -11,8 +11,14 @@ public class CarCtrl : Singleton<CarCtrl>
     public float maxSteerAngle;
     public WheelCollider wheelFL, wheelFR, wheelRL, wheelRR;
     [Header("Gear")]
-    public int gearCount;
+    public float finalDriveRatio;
+    public float[] gearRatios;
+    public float reverseGearRatio;
+    public float minRpm, maxRpm;
     public float maxSpd; //max speed that the gear could provide full torque
+    public float idleSpd;
+    public float torqueCurveCoef;
+    public AnimationCurve torqueCurve;
 
     [HideInInspector] public Rigidbody rgb;
 
@@ -20,6 +26,7 @@ public class CarCtrl : Singleton<CarCtrl>
 
     [HideInInspector] public float spd;
     [HideInInspector] public float torque;
+    [HideInInspector] public float rpm;
     protected override void Awake(){
         base.Awake();
         rgb=GetComponent<Rigidbody>();
@@ -56,8 +63,27 @@ public class CarCtrl : Singleton<CarCtrl>
         float accel = CarInput.inst.throttleInput;  // W/S 或 上/下
         float brake = CarInput.inst.brakeInput;
 
-        float gearMotorCoef=GetGearMotorCoef();
-        accel*=gearMotorCoef;
+        float gearRatio=GetGearRatio();
+        //calculate rpm
+        if(GearCtrl.inst.Gear==0)
+            rpm=Mathf.Clamp(gearRatio*minRpm, minRpm, maxRpm);
+        else {
+            float wheelRpm=wheelFL.rpm;
+            rpm=wheelRpm*gearRatio;
+            if (Mathf.Abs(rpm) > maxRpm && wheelRpm>.001f) {
+                gearRatio=maxRpm/wheelRpm*Mathf.Sign(rpm)*Mathf.Exp(maxRpm-Mathf.Abs(rpm));
+                rpm=maxRpm;
+            } else if (Mathf.Abs(rpm) < minRpm) {
+                //gearRatio=minRpm/wheelRpm*Mathf.Sign(rpm);
+                gearRatio*=idleSpd;
+                rpm=minRpm;
+            }
+            rpm=Mathf.Abs(rpm);
+        }
+        gearRatio*=torqueCurve.Evaluate((rpm-minRpm)/(maxRpm-minRpm))*torqueCurveCoef;
+        CarUI.inst.motorBar.SetProgress(torqueCurve.Evaluate((rpm-minRpm)/(maxRpm-minRpm)));
+
+        accel*=gearRatio*CarInput.inst.clutchInput;
         if(brake>0.001f){ //brake
             torque=Mathf.Lerp(torque, 0, brakeForce);
         } else if(Mathf.Abs(accel)<0.001f){ //sliding
@@ -67,7 +93,8 @@ public class CarCtrl : Singleton<CarCtrl>
             torque=Mathf.Lerp(torque, accel, motorForce);
         }
 
-        SetMotorTorque(torque);
+        if(brake>0.001f || (GearCtrl.inst.Gear!=0 && CarInput.inst.clutchInput>.001f))
+            SetMotorTorque(torque);
     }
     void HandleGear(){
         curGear=GearCtrl.inst.Gear;
@@ -77,21 +104,9 @@ public class CarCtrl : Singleton<CarCtrl>
         wheelFL.steerAngle = CarInput.inst.steerInput*maxSteerAngle;
         wheelFR.steerAngle = CarInput.inst.steerInput*maxSteerAngle;
     }
-    float GetGearMotorCoef(){
-        float spd_range_min=maxSpd*curGear/gearCount;
-        float spd_range_max=maxSpd*(curGear+1)/gearCount;
-
-        // get the coefficient between 0-1 regardless of the curGear
-        float normalizedCoef;
-        if(spd<spd_range_min)
-            normalizedCoef=Mathf.Exp(spd-spd_range_min);
-        else if(spd>spd_range_max)
-            normalizedCoef=Mathf.Exp(-(spd-spd_range_max));
-        else
-            normalizedCoef=1;
-        CarUI.inst.motorBar.SetProgress(normalizedCoef);
-        // calculate the actual coef
-        normalizedCoef*=(float)(curGear+1)/gearCount;
-        return normalizedCoef;
+    float GetGearRatio(){
+        if(GearCtrl.inst.Gear==0) return 0;
+        if(GearCtrl.inst.Gear==-1) return reverseGearRatio*finalDriveRatio;
+        return gearRatios[GearCtrl.inst.Gear-1]*finalDriveRatio;
     }
 }

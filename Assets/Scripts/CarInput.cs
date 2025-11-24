@@ -16,9 +16,15 @@ public class CarInput : Singleton<CarInput>
         gearBoxInput.y=Input.GetAxis("GearY");
         gearBoxInputDelta=gearBoxInput-gearBoxInputDelta;
         // paddle input
-        throttleInput=MathUtil.Map01(Input.GetAxis("Throttle"),-1f,1f);
-        brakeInput=MathUtil.Map01(Input.GetAxis("Brake"),-1f,1f);
-        clutchInput=MathUtil.Map01(Input.GetAxis("Clutch"),-1f,1f);
+        if (Input.GetKey(KeyCode.Joystick1Button5)) {
+            throttleInput=0;
+            brakeInput=MathUtil.Map01(Input.GetAxis("Throttle"),-1f,1f);
+        }
+        else {
+            throttleInput=MathUtil.Map01(Input.GetAxis("Throttle"),-1f,1f);
+            brakeInput=0;
+        }
+        clutchInput=1-MathUtil.Map01(Input.GetAxis("Clutch"),-1f,1f);
         // steering
         steerInput=Input.GetAxis("Horizontal");
     }
