@@ -11,14 +11,10 @@ public class CarCtrl : Singleton<CarCtrl>
     public float maxSteerAngle;
     public WheelCollider wheelFL, wheelFR, wheelRL, wheelRR;
     [Header("Gear")]
-    public float finalDriveRatio;
-    public float[] gearRatios;
-    public float reverseGearRatio;
-    public float minRpm, maxRpm;
-    public float maxSpd; //max speed that the gear could provide full torque
-    public float idleSpd;
-    public float torqueCurveCoef;
-    public AnimationCurve torqueCurve;
+    public float reverseTorqueCoef;
+    public float[] torqueCurveCoefs;
+    public AnimationCurve[] torqueCurves; //torque curve relative to the speed
+    public AnimationCurve reverseTorqueCurve;
 
     [HideInInspector] public Rigidbody rgb;
 
@@ -63,29 +59,11 @@ public class CarCtrl : Singleton<CarCtrl>
         float accel = CarInput.inst.throttleInput;  // W/S 或 上/下
         float brake = CarInput.inst.brakeInput;
 
-        float gearRatio=GetGearRatio();
-        //calculate rpm
-        if(GearCtrl.inst.Gear==0)
-            rpm=Mathf.Clamp(gearRatio*minRpm, minRpm, maxRpm);
-        else {
-            float wheelRpm=wheelFL.rpm;
-            rpm=wheelRpm*gearRatio;
-            if (Mathf.Abs(rpm) > maxRpm && wheelRpm>.001f) {
-                gearRatio=maxRpm/wheelRpm*Mathf.Sign(rpm)*Mathf.Exp(maxRpm-Mathf.Abs(rpm));
-                rpm=maxRpm;
-            } else if (Mathf.Abs(rpm) < minRpm) {
-                //gearRatio=minRpm/wheelRpm*Mathf.Sign(rpm);
-                gearRatio*=idleSpd;
-                rpm=minRpm;
-            }
-            rpm=Mathf.Abs(rpm);
-        }
-        gearRatio*=torqueCurve.Evaluate((rpm-minRpm)/(maxRpm-minRpm))*torqueCurveCoef;
-        CarUI.inst.motorBar.SetProgress(torqueCurve.Evaluate((rpm-minRpm)/(maxRpm-minRpm)));
+        float gearTorque=GetTorque();
 
-        accel*=gearRatio*CarInput.inst.clutchInput;
+        accel*=gearTorque*CarInput.inst.clutchInput;
         if(brake>0.001f){ //brake
-            torque=Mathf.Lerp(torque, 0, brakeForce);
+            torque=Mathf.Lerp(torque, 0, brakeForce*brake);
         } else if(Mathf.Abs(accel)<0.001f){ //sliding
             torque=Mathf.Lerp(torque, 0, dragForce);
         } else{ //accelerating
@@ -104,9 +82,9 @@ public class CarCtrl : Singleton<CarCtrl>
         wheelFL.steerAngle = CarInput.inst.steerInput*maxSteerAngle;
         wheelFR.steerAngle = CarInput.inst.steerInput*maxSteerAngle;
     }
-    float GetGearRatio(){
+    float GetTorque(){
         if(GearCtrl.inst.Gear==0) return 0;
-        if(GearCtrl.inst.Gear==-1) return reverseGearRatio*finalDriveRatio;
-        return gearRatios[GearCtrl.inst.Gear-1]*finalDriveRatio;
+        if(GearCtrl.inst.Gear==-1) return -reverseTorqueCurve.Evaluate(spd)*reverseTorqueCoef;
+        return torqueCurves[GearCtrl.inst.Gear-1].Evaluate(spd)*torqueCurveCoefs[GearCtrl.inst.Gear-1];
     }
 }
