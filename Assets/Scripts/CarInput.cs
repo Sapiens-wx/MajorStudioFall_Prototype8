@@ -1,7 +1,5 @@
 using UnityEngine;
 using System;
-using VehiclePhysics;
-
 public class CarInput : Singleton<CarInput>
 {
     [HideInInspector][NonSerialized] public Vector2 gearBoxInput, gearBoxInputDelta;

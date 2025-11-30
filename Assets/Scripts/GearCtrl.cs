@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using EdyCommonTools;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
