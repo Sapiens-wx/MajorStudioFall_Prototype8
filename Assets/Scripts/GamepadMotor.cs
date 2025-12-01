@@ -21,6 +21,11 @@ public class GamepadMotor : Singleton<GamepadMotor>
         base.Awake();
         list=new List<MotorInfo>();
     }
+    void OnDisable()
+    {
+        if(Gamepad.current!=null)
+            Gamepad.current.SetMotorSpeeds(0f, 0f);
+    }
     MotorInfo FindInList(object obj) {
         foreach(var e in list) {
             if(e.obj==obj) return e;

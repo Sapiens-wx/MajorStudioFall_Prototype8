@@ -611,6 +611,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[0].time
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
       propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].time
       value: 1
       objectReference: {fileID: 0}
@@ -652,12 +657,12 @@ PrefabInstance:
     - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
       propertyPath: clutchLowFrqCurve.m_Curve.Array.data[0].value
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
       propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].value
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
@@ -737,7 +742,7 @@ PrefabInstance:
     - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
       propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].inWeight
-      value: 0
+      value: 0.33333334
       objectReference: {fileID: 0}
     - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
@@ -808,6 +813,11 @@ PrefabInstance:
         type: 3}
       propertyPath: clutchHighFrqCurve.m_Curve.Array.data[4].outSlope
       value: -2.0518892
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[0].outWeight
+      value: 0.33333334
       objectReference: {fileID: 0}
     - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
