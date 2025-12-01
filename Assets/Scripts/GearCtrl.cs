@@ -689,11 +689,9 @@ public class GearCtrl:Singleton<GearCtrl>{
     }
     IEnumerator Vibrate()
     {
-        if(Gamepad.current!=null)
-            Gamepad.current.SetMotorSpeeds(vibrateLowFrq, vibrateHighFrq);
+        GamepadMotor.SetMotorSpeed(this, vibrateLowFrq, vibrateHighFrq);
         yield return new WaitForSeconds(vibrateDuration);
-        if(Gamepad.current!=null)
-            Gamepad.current.SetMotorSpeeds(0f, 0f);
+        GamepadMotor.SetMotorSpeed(this, 0f, 0f);
         vibrateCoro=null;
     }
 }

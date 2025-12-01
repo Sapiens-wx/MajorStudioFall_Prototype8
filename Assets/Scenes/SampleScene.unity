@@ -547,17 +547,17 @@ PrefabInstance:
     - target: {fileID: 677166692226240038, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 55
+      value: 47.6
       objectReference: {fileID: 0}
     - target: {fileID: 677166692226240038, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.5
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 677166692226240038, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.5
+      value: -19.82
       objectReference: {fileID: 0}
     - target: {fileID: 677166692226240038, guid: 3d409743b1eccce4e91a941bff60e60d,
         type: 3}
@@ -598,6 +598,261 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Car
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[2].time
+      value: 0.5111084
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[3].time
+      value: 0.86845005
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[4].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[1].time
+      value: 0.08053415
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[2].time
+      value: 0.5027771
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[3].time
+      value: 0.88251925
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[4].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[0].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[2].value
+      value: 0.5031433
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[3].value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[1].value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[2].value
+      value: 0.5047188
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[3].value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[0].inSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].inSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[2].inSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[3].inSlope
+      value: -1.9668269
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[4].inSlope
+      value: -2.0583189
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[0].inSlope
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[1].inSlope
+      value: Infinity
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[3].inSlope
+      value: -1.6837676
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[4].inSlope
+      value: -2.0518892
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[0].outSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].inWeight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].outSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[2].inWeight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[2].outSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[3].inWeight
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[3].outSlope
+      value: Infinity
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[4].inWeight
+      value: 0.12499927
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[4].outSlope
+      value: -2.0583189
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[0].outSlope
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[1].inWeight
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[1].outSlope
+      value: 1.7046825
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[3].inWeight
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[3].outSlope
+      value: Infinity
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[4].inWeight
+      value: 0.08938523
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[4].outSlope
+      value: -2.0518892
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].outWeight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[3].outWeight
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[1].outWeight
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[3].outWeight
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[0].tangentMode
+      value: 34
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[1].tangentMode
+      value: 34
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchLowFrqCurve.m_Curve.Array.data[3].tangentMode
+      value: 97
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[1].tangentMode
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605273533611810820, guid: 3d409743b1eccce4e91a941bff60e60d,
+        type: 3}
+      propertyPath: clutchHighFrqCurve.m_Curve.Array.data[3].tangentMode
+      value: 97
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
