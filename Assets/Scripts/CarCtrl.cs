@@ -144,8 +144,8 @@ public class CarCtrl : Singleton<CarCtrl>
     }
     void HandleSteering()
     {
-        wheelFL.steerAngle = CarInput.inst.steerInput*maxSteerAngle;
-        wheelFR.steerAngle = CarInput.inst.steerInput*maxSteerAngle;
+        wheelFL.steerAngle = Steering.inst.steer*maxSteerAngle;
+        wheelFR.steerAngle = Steering.inst.steer*maxSteerAngle;
     }
     float lastClutch;
     void HandleClutchMotor()
