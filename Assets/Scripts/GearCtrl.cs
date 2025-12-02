@@ -34,11 +34,6 @@ public class GearCtrl:Singleton<GearCtrl>{
         get=>gear;
     }
 
-    //debug
-    public TMP_Text textStickStage;
-    public TMP_Text textGear, textLastGear;
-    public TMP_Text textStickOffset;
-    //debug
     void OnValidate(){
         if(inst==null) inst=this;
         stickCenter=stick.anchoredPosition; //changed to anchor pos instead of world pos
@@ -61,9 +56,6 @@ public class GearCtrl:Singleton<GearCtrl>{
         clutchBar.SetProgress(CarInput.inst.clutchInput);
         UpdateStickPos(CarInput.inst.gearBoxInput, CarInput.inst.gearBoxInputDelta);
         UpdateGear();
-        textGear.text=$"gear: {gear}";
-        textLastGear.text=$"lastGear: {lastGear}";
-        textStickOffset.text=$"stickOffset: {stickOffset.origin}";
     }
     void CalculateAnchorPos(){
         anchorML=stickCenter;
@@ -674,7 +666,6 @@ public class GearCtrl:Singleton<GearCtrl>{
 
         if (tmpStickStage!=stickStage)
             lastStickStage=tmpStickStage;
-        textStickStage.text=stickStage.ToString();
     }
     void UpdateGear()
     {
@@ -712,9 +703,11 @@ public class GearCtrl:Singleton<GearCtrl>{
     }
     IEnumerator Vibrate()
     {
-        GamepadMotor.SetMotorSpeed(this, vibrateLowFrq, vibrateHighFrq);
-        yield return new WaitForSeconds(vibrateDuration);
-        GamepadMotor.SetMotorSpeed(this, 0f, 0f);
+        if (CarCtrl.inst.EngineOn) {
+            GamepadMotor.SetMotorSpeed(this, vibrateLowFrq, vibrateHighFrq);
+            yield return new WaitForSeconds(vibrateDuration);
+            GamepadMotor.SetMotorSpeed(this, 0f, 0f);
+        }
         vibrateCoro=null;
     }
 }

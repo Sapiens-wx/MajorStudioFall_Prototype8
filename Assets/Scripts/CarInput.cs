@@ -7,6 +7,8 @@ public class CarInput : Singleton<CarInput>
     [HideInInspector][NonSerialized] public float brakeInput;
     [HideInInspector][NonSerialized] public float clutchInput;
     [HideInInspector][NonSerialized] public float steerInput;
+    [HideInInspector][NonSerialized] public Vector2 steerInputVec2;
+    [HideInInspector][NonSerialized] public bool engineInput;
     void FixedUpdate(){
         // Gear input
         gearBoxInputDelta=gearBoxInput;
@@ -25,5 +27,9 @@ public class CarInput : Singleton<CarInput>
         clutchInput=1-MathUtil.Map01(Input.GetAxis("Clutch"),-1f,1f);
         // steering
         steerInput=Input.GetAxis("Horizontal");
+        steerInputVec2.x=steerInput;
+        steerInputVec2.y=Input.GetAxis("Vertical");
+        // engine
+        engineInput=Input.GetKey(KeyCode.JoystickButton1);
     }
 }

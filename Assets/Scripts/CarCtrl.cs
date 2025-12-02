@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 
 public class CarCtrl : Singleton<CarCtrl>
 {
-    public float maxMotorTorque;
     public float baseThrottle;
     public float motorForce; // 0-1
     public float brakeForce; // 0-1
@@ -15,6 +14,10 @@ public class CarCtrl : Singleton<CarCtrl>
     public float accelCoef; // 0-1
     public float maxSteerAngle;
     public WheelCollider wheelFL, wheelFR, wheelRL, wheelRR;
+    [Header("Rpm")]
+    public float minRpm;
+    public float maxRpm;
+    public AnimationCurve[] rpmCurves;
     [Header("Gear")]
     public float reverseTorqueCoef;
     public float[] torqueCurveCoefs;
@@ -23,18 +26,39 @@ public class CarCtrl : Singleton<CarCtrl>
     [Header("Clutch")]
     public AnimationCurve clutchLowFrqCurve;
     public AnimationCurve clutchHighFrqCurve;
+    [Header("Jumping")]
+    public float jumpForce;
+    public float jumpTorque;
+    public float jumpCoolDown;
+    public float jumpAngleDeg;
+    [Header("Engine")]
+    public float engineStartDuration;
+    public float engineLowFrq, engineHighFrq;
 
     [HideInInspector] public Rigidbody rgb;
 
     [HideInInspector] public int curGear;
 
     [HideInInspector] public float spd;
-    [HideInInspector] public float torque;
+    [HideInInspector] public float torque, maxTorque;
     [HideInInspector] public float rpm;
+    bool engineOn;
+    public bool EngineOn {
+        get=>engineOn;
+        set {
+            engineOn=value;
+            if(engineOn==false) rpm=0;
+            else rpm=minRpm;
+        }
+    }
+
+    float lastJumpTime;
     protected override void Awake(){
         base.Awake();
         rgb=GetComponent<Rigidbody>();
         curGear=0;
+        lastJumpTime=-jumpCoolDown;
+        EngineOn=false;
     }
     // Start is called before the first frame update
     void Start()
@@ -45,10 +69,8 @@ public class CarCtrl : Singleton<CarCtrl>
         SetBrakeTorque(0);
     }
 
-    void Update(){
-        HandleGear();
-    }
     void FixedUpdate(){
+        HandleEngine();
         HandleMotor();
         HandleSteering();
         HandleClutchMotor();
@@ -68,25 +90,42 @@ public class CarCtrl : Singleton<CarCtrl>
     }
     float lastTorque, torqueDir;
     void HandleMotor() {
+        if(rpm<minRpm) engineOn=false;
         float throttle = HandleBaseThrottle(CarInput.inst.throttleInput);  // W/S 或 上/下
         float brake = CarInput.inst.brakeInput;
 
-        float gearTorque=GetTorque();
-
-        throttle*=gearTorque*CarInput.inst.clutchInput;
         float accel=0;
-        if(brake>0.001f){ //brake
+        if (brake > 0.001f) { // brake
             accel=brakeForce*brake*brakeCurve.Evaluate(spd)*torqueDir;
-        } else if(GearCtrl.inst.Gear!=0){ //sliding with neutral gear
-            accel=throttle*motorForce;
         }
-        accel+=torqueDir*dragForce*dragCurve.Evaluate(spd);
+        if(engineOn){
+            float gearTorque=GetTorque();
+            if (GearCtrl.inst.Gear == 5) {
+                if(throttle>.3f) Jump();
+            } else {
+                throttle*=gearTorque*CarInput.inst.clutchInput;
+                if(brake>0.001f){ //brake
+                } else if(GearCtrl.inst.Gear!=0){ //sliding with neutral gear
+                    accel=throttle*motorForce;
+                }
+                if(GearCtrl.inst.Gear!=0&&GearCtrl.inst.Gear!=5)
+                    accel+=torqueDir*dragForce*dragCurve.Evaluate(rpm/maxRpm)*Mathf.Atan(spd)*CarInput.inst.clutchInput;
+            }
 
+            // Rpm
+            if (GearCtrl.inst.Gear == 0 || GearCtrl.inst.Gear == 5) {
+                rpm=Mathf.Lerp(minRpm, maxRpm, CarInput.inst.throttleInput);
+            } else {
+                int gear=GearCtrl.inst.Gear;
+                if(gear==-1) gear=1;
+                rpm=Mathf.Lerp(0, maxRpm, rpmCurves[gear-1].Evaluate(spd));
+                rpm=Mathf.Lerp(Mathf.Lerp(minRpm, maxRpm, CarInput.inst.throttleInput), rpm, CarInput.inst.clutchInput);
+            }
+        }
         torque=2*torque-lastTorque+accelCoef*accel*Time.fixedDeltaTime*Time.fixedDeltaTime;
-        torqueDir=Mathf.Sign(torque);
         lastTorque=torque;
-
-        if(brake>0.001f || (GearCtrl.inst.Gear!=0 && CarInput.inst.clutchInput > .001f)) {
+        if(brake>0.001f || ((GearCtrl.inst.Gear!=0&&GearCtrl.inst.Gear!=5) && CarInput.inst.clutchInput > .001f)) {
+            torqueDir=Mathf.Sign(torque);
             SetMotorTorque(torque);
         }
     }
@@ -101,19 +140,54 @@ public class CarCtrl : Singleton<CarCtrl>
     float lastClutch;
     void HandleClutchMotor()
     {
-        float clutch=CarInput.inst.clutchInput;
-        if (Mathf.Abs(lastClutch - clutch) > .001f) {
-            GamepadMotor.SetMotorSpeed(this, clutchLowFrqCurve.Evaluate(clutch), clutchHighFrqCurve.Evaluate(clutch));
-            lastClutch=clutch;
+        if (engineOn) {
+            float clutch=CarInput.inst.clutchInput;
+            if (Mathf.Abs(lastClutch - clutch) > .001f) {
+                GamepadMotor.SetMotorSpeed(this, clutchLowFrqCurve.Evaluate(clutch), clutchHighFrqCurve.Evaluate(clutch));
+                lastClutch=clutch;
+            }
         }
     }
     float GetTorque(){
-        if(GearCtrl.inst.Gear==0) return 0;
+        if(GearCtrl.inst.Gear==0||GearCtrl.inst.Gear==5) return 0;
         if(GearCtrl.inst.Gear==-1) return -reverseTorqueCurve.Evaluate(spd)*reverseTorqueCoef;
         return torqueCurves[GearCtrl.inst.Gear-1].Evaluate(spd)*torqueCurveCoefs[GearCtrl.inst.Gear-1];
     }
     // t=[0,1]
     float HandleBaseThrottle(float t) {
         return baseThrottle+(1-baseThrottle)*t;
+    }
+    float engineButtonDownTime;
+    void HandleEngine() {
+        if (!engineOn)
+        {
+            if (CarInput.inst.engineInput == false) { //stops starting the engine
+                engineButtonDownTime=Time.time;
+                rpm=0f;
+                GamepadMotor.SetMotorSpeed(this, 0f, 0f);
+            } else if(Time.time-engineButtonDownTime>engineStartDuration){
+                EngineOn=true;
+                GamepadMotor.SetMotorSpeed(this, 0f, 0f);
+            } else {
+                float t=Time.time-engineButtonDownTime;
+                t/=engineStartDuration;
+                rpm=Random.Range(0, minRpm*.75f);
+                GamepadMotor.SetMotorSpeed(this, engineLowFrq*t, engineHighFrq*t);
+            }
+        }
+    }
+    void Jump() {
+        if (Time.time - lastJumpTime >= jumpCoolDown) {
+            lastJumpTime=Time.time;
+            Vector3 jumpDir=MathUtil.RandomDirection(jumpAngleDeg);
+            rgb.AddForce(jumpDir*jumpForce);
+            Vector3 torqueDir=-CarInput.inst.steerInputVec2.x*transform.right+CarInput.inst.steerInputVec2.y*transform.forward;
+            float torqueCoef=torqueDir.magnitude;
+            if (torqueCoef > .05f) {
+                torqueDir/=torqueCoef; //normalize
+                torqueDir=Vector3.Cross(torqueDir, transform.up);
+                rgb.AddTorque(torqueDir*torqueCoef*jumpTorque);
+            }
+        }
     }
 }
