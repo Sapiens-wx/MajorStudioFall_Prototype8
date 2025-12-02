@@ -36,6 +36,6 @@ public class Steering : Singleton<Steering>
         }
     }
     void HandleDisplay() {
-        steerGameObject.localRotation=Quaternion.Euler(0f, 0f, -steer*maxSteerObjAngle);
+        steerGameObject.localRotation=Quaternion.Euler(0f, -steer*maxSteerObjAngle, 0f);
     }
 }
