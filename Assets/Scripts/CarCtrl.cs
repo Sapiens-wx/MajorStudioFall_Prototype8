@@ -34,6 +34,8 @@ public class CarCtrl : Singleton<CarCtrl>
     [Header("Engine")]
     public float engineStartDuration;
     public float engineLowFrq, engineHighFrq;
+    public AudioSource engineAudioSource;
+    public AudioClip enginStartClip, engineOnClip;
 
     [HideInInspector] public Rigidbody rgb;
 
@@ -42,14 +44,22 @@ public class CarCtrl : Singleton<CarCtrl>
     [HideInInspector] public float spd;
     [HideInInspector] public float torque, maxTorque;
     [HideInInspector] public float rpm;
-    bool engineOn;
-    public bool EngineOn {
-        get=>engineOn;
+    EEngineState engineState;
+    public EEngineState EngineState {
+        get=>engineState;
         set {
-            engineOn=value;
-            if(engineOn==false) rpm=0;
-            else rpm=minRpm;
+            if(engineState==value) return;
+            engineState=value;
+            if(engineState==EEngineState.Off){
+                rpm=0;
+                engineButtonDownTime=Time.time;
+            } else if(engineState==EEngineState.On) rpm=minRpm;
         }
+    }
+    public enum EEngineState {
+        Off,
+        Starting,
+        On
     }
 
     float lastJumpTime;
@@ -58,7 +68,7 @@ public class CarCtrl : Singleton<CarCtrl>
         rgb=GetComponent<Rigidbody>();
         curGear=0;
         lastJumpTime=-jumpCoolDown;
-        EngineOn=false;
+        EngineState=EEngineState.Off;
     }
     // Start is called before the first frame update
     void Start()
@@ -90,7 +100,7 @@ public class CarCtrl : Singleton<CarCtrl>
     }
     float lastTorque, torqueDir;
     void HandleMotor() {
-        if(rpm<minRpm) engineOn=false;
+        if(rpm<minRpm && EngineState==EEngineState.On) EngineState=EEngineState.Off;
         float throttle = HandleBaseThrottle(CarInput.inst.throttleInput);  // W/S 或 上/下
         float brake = CarInput.inst.brakeInput;
 
@@ -98,7 +108,7 @@ public class CarCtrl : Singleton<CarCtrl>
         if (brake > 0.001f) { // brake
             accel=brakeForce*brake*brakeCurve.Evaluate(spd)*torqueDir;
         }
-        if(engineOn){
+        if(engineState==EEngineState.On) {
             float gearTorque=GetTorque();
             if (GearCtrl.inst.Gear == 5) {
                 if(throttle>.3f) Jump();
@@ -140,7 +150,7 @@ public class CarCtrl : Singleton<CarCtrl>
     float lastClutch;
     void HandleClutchMotor()
     {
-        if (engineOn) {
+        if (engineState==EEngineState.On) {
             float clutch=CarInput.inst.clutchInput;
             if (Mathf.Abs(lastClutch - clutch) > .001f) {
                 GamepadMotor.SetMotorSpeed(this, clutchLowFrqCurve.Evaluate(clutch), clutchHighFrqCurve.Evaluate(clutch));
@@ -159,20 +169,33 @@ public class CarCtrl : Singleton<CarCtrl>
     }
     float engineButtonDownTime;
     void HandleEngine() {
-        if (!engineOn)
-        {
+        if(engineState!=EEngineState.On) {
             if (CarInput.inst.engineInput == false) { //stops starting the engine
+                EngineState=EEngineState.Off;
                 engineButtonDownTime=Time.time;
                 rpm=0f;
                 GamepadMotor.SetMotorSpeed(this, 0f, 0f);
+                if(engineAudioSource.isPlaying){
+                    engineAudioSource.Stop();
+                    engineAudioSource.clip=null;
+                }
             } else if(Time.time-engineButtonDownTime>engineStartDuration){
-                EngineOn=true;
+                EngineState=EEngineState.On;
                 GamepadMotor.SetMotorSpeed(this, 0f, 0f);
+                engineAudioSource.clip=engineOnClip;
+                engineAudioSource.loop=true;
+                engineAudioSource.Play();
             } else {
                 float t=Time.time-engineButtonDownTime;
                 t/=engineStartDuration;
                 rpm=Random.Range(0, minRpm*.75f);
-                GamepadMotor.SetMotorSpeed(this, engineLowFrq*t, engineHighFrq*t);
+                if(EngineState!=EEngineState.Starting){
+                    GamepadMotor.SetMotorSpeed(this, engineLowFrq*t, engineHighFrq*t);
+                    EngineState=EEngineState.Starting;
+                    engineAudioSource.clip=enginStartClip;
+                    engineAudioSource.loop=false;
+                    engineAudioSource.Play();
+                }
             }
         }
     }

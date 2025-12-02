@@ -703,7 +703,7 @@ public class GearCtrl:Singleton<GearCtrl>{
     }
     IEnumerator Vibrate()
     {
-        if (CarCtrl.inst.EngineOn) {
+        if (CarCtrl.inst.EngineState == CarCtrl.EEngineState.On) {
             GamepadMotor.SetMotorSpeed(this, vibrateLowFrq, vibrateHighFrq);
             yield return new WaitForSeconds(vibrateDuration);
             GamepadMotor.SetMotorSpeed(this, 0f, 0f);
