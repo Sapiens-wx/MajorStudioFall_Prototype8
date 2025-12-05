@@ -85,6 +85,12 @@ public class CarCtrl : Singleton<CarCtrl>
         HandleSteering();
         HandleClutchMotor();
         spd=rgb.velocity.magnitude;
+        if(spd<.08f && torque>1000 && CarInput.inst.throttleInput<.01f){
+            torque=0f;
+            lastTorque=0f;
+            torqueDir=1f;
+            SetMotorTorque(0);
+        }
     }
     void SetBrakeTorque(float f){
         wheelFL.brakeTorque = f;
