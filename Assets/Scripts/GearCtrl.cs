@@ -8,7 +8,7 @@ public class GearCtrl:Singleton<GearCtrl>{
     public float scale;
     public float gearTriggerDist;
     public float stickToNeutralEps, maxStickDisplacement;
-    public RectTransform stick;
+    public Transform stick;
 
     public ProgressBar throttleBar, brakeBar, clutchBar;
     [Header("Vibration")]
@@ -36,16 +36,17 @@ public class GearCtrl:Singleton<GearCtrl>{
 
     void OnValidate(){
         if(inst==null) inst=this;
-        stickCenter=stick.anchoredPosition; //changed to anchor pos instead of world pos
+        stickCenter=stick.localPosition; //changed to anchor pos instead of world pos
         stickOffset=new StickOffset(StickStage.Center);
         CalculateAnchorPos();
     }
     void OnDrawGizmosSelected(){
-        Gizmos.DrawLine(anchorMR, anchorML);
-        Gizmos.DrawLine(anchorBM, anchorTM);
-        Gizmos.DrawLine(anchorBL, anchorTL);
-        Gizmos.DrawLine(anchorBR, anchorTR);
-        Gizmos.DrawWireSphere(stickCenter, gearTriggerDist);
+        Gizmos.color=Color.green;
+        Gizmos.DrawLine(anchorMR+stick.position, anchorML+stick.position);
+        Gizmos.DrawLine(anchorBM+stick.position, anchorTM+stick.position);
+        Gizmos.DrawLine(anchorBL+stick.position, anchorTL+stick.position);
+        Gizmos.DrawLine(anchorBR+stick.position, anchorTR+stick.position);
+        Gizmos.DrawWireSphere(stickCenter+stick.position, gearTriggerDist);
     }
     void Start(){
         OnValidate();
@@ -205,11 +206,11 @@ public class GearCtrl:Singleton<GearCtrl>{
         Vector3 scaledInput = (Vector3)(input * scale);
 
         // world pos -> anchor pos
-        Vector3 stickPos = (Vector3)stick.anchoredPosition - stickCenter;
+        Vector3 stickPos = stick.localPosition - stickCenter;
         Vector3 targetPos = stickPos;
 
         StickStage tmpStickStage = stickStage;
-        stickStage = GetStickStage(stick.anchoredPosition);
+        stickStage = GetStickStage(stick.localPosition);
 
 
         
@@ -655,14 +656,13 @@ public class GearCtrl:Singleton<GearCtrl>{
             actualPosOffset=actualPosOffset/actualPosOffsetMag*maxSpd;
         stick.position+=actualPosOffset;*/
 
-        Vector3 currentAnchored = stick.anchoredPosition;
-        Vector3 actualPosOffset = targetPos + stickOffset.value - currentAnchored;
+        Vector3 actualPosOffset = targetPos + stickOffset.value - stick.localPosition;
 
         float actualPosOffsetMag = actualPosOffset.magnitude;
         if (actualPosOffsetMag > maxSpd)
             actualPosOffset = actualPosOffset / actualPosOffsetMag * maxSpd;
        
-        stick.anchoredPosition = (Vector2)(currentAnchored + actualPosOffset);
+        stick.localPosition += actualPosOffset;
 
         if (tmpStickStage!=stickStage)
             lastStickStage=tmpStickStage;
