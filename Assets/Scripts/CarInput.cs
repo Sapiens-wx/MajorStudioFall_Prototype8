@@ -9,6 +9,7 @@ public class CarInput : Singleton<CarInput>
     [HideInInspector][NonSerialized] public float steerInput;
     [HideInInspector][NonSerialized] public Vector2 steerInputVec2;
     [HideInInspector][NonSerialized] public bool engineInput;
+    [HideInInspector][NonSerialized] public Vector2 viewInput;
     void FixedUpdate(){
         // Gear input
         gearBoxInputDelta=gearBoxInput;
@@ -31,5 +32,8 @@ public class CarInput : Singleton<CarInput>
         steerInputVec2.y=Input.GetAxis("Vertical");
         // engine
         engineInput=Input.GetKey(KeyCode.JoystickButton1);
+        // view
+        viewInput.x=Input.GetAxis("ViewX");
+        viewInput.y=Input.GetAxis("ViewY");
     }
 }

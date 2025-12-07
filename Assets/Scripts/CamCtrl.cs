@@ -27,24 +27,34 @@ public class DirectionRotator : MonoBehaviour
         targetLocalRotation = baseLocalRotation;
     }
 
+    bool lastFrontKeyPressed=false;
+    bool lastBackKeyPressed=false;
+    bool lastLeftKeyPressed=false;
+    bool lastRightKeyPressed=false;
     void Update()
     {
-        if (Input.GetKeyDown(frontKey))
-        {
+        const float threshold=.9f;
+        bool keyPressed=false;
+        //front
+        keyPressed=CarInput.inst.viewInput.y>=threshold;
+        if(keyPressed && !lastFrontKeyPressed)
             HandleFrontKey();
-        }
-        else if (Input.GetKeyDown(backKey))
-        {
+        lastFrontKeyPressed=keyPressed;
+        //back
+        keyPressed=CarInput.inst.viewInput.y<=-threshold;
+        if(keyPressed && !lastBackKeyPressed)
             SetTarget(back);
-        }
-        else if (Input.GetKeyDown(leftKey))
-        {
+        lastBackKeyPressed=keyPressed;
+        //left
+        keyPressed=CarInput.inst.viewInput.x<=-threshold;
+        if(keyPressed && !lastLeftKeyPressed)
             SetTarget(left);
-        }
-        else if (Input.GetKeyDown(rightKey))
-        {
+        lastLeftKeyPressed=keyPressed;
+        //right
+        keyPressed=CarInput.inst.viewInput.x>=threshold;
+        if(keyPressed && !lastRightKeyPressed)
             SetTarget(right);
-        }
+        lastRightKeyPressed=keyPressed;
 
         // Smooth rotation using localRotation
         transform.localRotation = Quaternion.Slerp(
