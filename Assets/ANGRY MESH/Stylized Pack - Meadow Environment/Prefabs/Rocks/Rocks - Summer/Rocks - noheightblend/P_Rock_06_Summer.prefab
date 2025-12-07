@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d72640d765f22244eb6733d57e66048b, type: 2}
+  - {fileID: 2100000, guid: 368ceeda8344fdb489ea1df373e61283, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 8293018442540532120}
   - component: {fileID: 412321423266472841}
   m_Layer: 0
-  m_Name: P_Rock_06_Winter
+  m_Name: P_Rock_06_Summer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -141,7 +141,7 @@ LODGroup:
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 456268085774129730}
-  - screenRelativeHeight: 0.02
+  - screenRelativeHeight: 0.03
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1182043118048715272}
@@ -229,7 +229,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d72640d765f22244eb6733d57e66048b, type: 2}
+  - {fileID: 2100000, guid: 368ceeda8344fdb489ea1df373e61283, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -312,7 +312,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d72640d765f22244eb6733d57e66048b, type: 2}
+  - {fileID: 2100000, guid: 368ceeda8344fdb489ea1df373e61283, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
