@@ -11,7 +11,7 @@ public class Techometer : Singleton<Techometer>
 
     [Header("UI")]
     public TMP_Text rpmText;
-    public RectTransform arrow;
+    public Transform arrow;
 
     private void Update()
     {

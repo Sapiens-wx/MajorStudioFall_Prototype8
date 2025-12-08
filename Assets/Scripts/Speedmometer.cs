@@ -15,7 +15,7 @@ public class Speedometer : MonoBehaviour
 
     [Header("UI")]
     public TMP_Text speedLabel;
-    public RectTransform arrow;
+    public Transform arrow;
 
     private float speed = 0.0f;
     private void Update()

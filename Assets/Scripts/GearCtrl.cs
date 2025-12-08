@@ -10,7 +10,6 @@ public class GearCtrl:Singleton<GearCtrl>{
     public float stickToNeutralEps, maxStickDisplacement;
     public Transform stick;
 
-    public ProgressBar throttleBar, brakeBar, clutchBar;
     [Header("Vibration")]
     public float vibrateLowFrq;
     public float vibrateHighFrq;
@@ -52,9 +51,6 @@ public class GearCtrl:Singleton<GearCtrl>{
         OnValidate();
     }
     void FixedUpdate(){
-        throttleBar.SetProgress(CarInput.inst.throttleInput);
-        brakeBar.SetProgress(CarInput.inst.brakeInput);
-        clutchBar.SetProgress(CarInput.inst.clutchInput);
         UpdateStickPos(CarInput.inst.gearBoxInput, CarInput.inst.gearBoxInputDelta);
         UpdateGear();
     }
